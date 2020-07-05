@@ -1,6 +1,6 @@
-# Random Products API
+# Random Fantasy People and Towns API
 
-Random Products API is a node API you can use to get Random Products (surprised?)
+Random Fantasy People and Towns API (surprised?)
 
 ## Description
 
