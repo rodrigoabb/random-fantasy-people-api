@@ -1,0 +1,10 @@
+{
+    "presets": ["@babel/preset-env"],
+    "ignore": [
+        "**/__tests__", // ignore the whole test directory
+        "**/*.test.js", // ignore test files only
+        "**/.history",
+        "config.js",
+        // "node_modules" // doesn't work here, ignored in command line on npm run build
+      ]
+}
