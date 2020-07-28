@@ -1,5 +1,8 @@
-const products = require('./products/products');
+import express from 'express';
+import population from './population';
 
-module.exports = (router) => {
-  products(router);
-};
+const router = express.Router();
+
+router.use('/api/v1', population);
+
+export default router;
