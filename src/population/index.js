@@ -1,5 +1,6 @@
 import uuidv4 from 'uuid/v4';
 import { nameByRace } from 'fantasy-name-generator';
+import fakeName from 'fake-town-name';
 import {
   API_URL,
   PROFESSIONS_ARRAY,
@@ -8,9 +9,11 @@ import {
   AGES_RANGES,
   WEIGHT_RANGES,
   HEIGHT_RANGES,
+  RACES_SUPPORTED,
   TOWNS_ARRAY,
-} from '../src/utilities/constants';
-import { generateRandom } from '../src/utilities/helperFunctions';
+} from '../utilities/constants';
+import { generateRandom, checkIfExistInArray } from '../utilities/helperFunctions';
+import { ErrorHandler } from '../utilities/errorHandler';
 
 const elfHero = nameByRace('human', { gender: 'female', allowMultipleNames: true });
 const enemyDemon = nameByRace('demon');
@@ -44,14 +47,13 @@ console.log('enemyDemon: ', enemyDemon);
         },
         */
 
-const generatePeople = (numberOfPeople, townName) => {
+const generatePeople = (race, numberOfPeople) => {
   const peopleArray = [];
-  const town = TOWNS_ARRAY.find((townObj) => (
-    townObj.name === townName
-  ));
-  const race = town.mainRace;
-  console.log('race: ', race);
-  const peopleNamesAndGenderArray = generateMultiplePeopleNameAndGender(numberOfPeople, race);
+  // const town = TOWNS_ARRAY.find((townObj) => (
+  //   townObj.name === townName
+  // ));
+  // console.log('town: ', town);
+  const peopleNamesAndGenderArray = generateMultiplePeopleNameAndGender(race, numberOfPeople);
   for (let i = 0; i < numberOfPeople; i += 1) {
     const { name, gender } = peopleNamesAndGenderArray[i];
     const avatarUrl = `${API_URL.base}/${API_URL.avatarResource}/${generateRandom([0, 999999999])}`;
@@ -59,10 +61,8 @@ const generatePeople = (numberOfPeople, townName) => {
     const weight = generateWeight(race);
     const height = generateHeight(race);
     const hairColor = COLOR_NAMES[generateRandom([0, COLOR_NAMES.length - 1])];
-    const professions = [];
-    for (let a = 0; a < generateRandom([0, 9]); a += 1) {
-      professions.push(PROFESSIONS_ARRAY[generateRandom([0, PROFESSIONS_ARRAY.length - 1])]);
-    }
+    const numberOfProfessions = generateRandom([0, 8]);
+    const professions = getSomeElementsFromArray(PROFESSIONS_ARRAY, numberOfProfessions);
     const numberOfFriends = numberOfPeople > 9 ? generateRandom([0, 9]) : generateRandom([0, numberOfPeople - 1]); // 0 to 9 friends
     const friends = getSomeNames(peopleNamesAndGenderArray, numberOfFriends, i);
     const person = {
@@ -80,16 +80,16 @@ const generatePeople = (numberOfPeople, townName) => {
     };
     peopleArray.push(person);
   }
-  const townAndInhabitants = {
-    townName: town.name,
-    mainRace: town.mainRace,
-    description: town.description,
-    inhabitants: peopleArray,
-  };
-  return townAndInhabitants;
+  // const townAndInhabitants = {
+  //   townName: town.name,
+  //   mainRace: town.mainRace,
+  //   description: town.description,
+  //   inhabitants: peopleArray,
+  // };
+  return peopleArray;
 };
 
-const generateMultiplePeopleNameAndGender = (numberOfPeople, race) => {
+const generateMultiplePeopleNameAndGender = (race, numberOfPeople) => {
   const peopleNamesArray = [];
   for (let i = 0; i < numberOfPeople; i += 1) {
     peopleNamesArray.push(generateSinglePeopleNameAndGender(race));
@@ -99,8 +99,8 @@ const generateMultiplePeopleNameAndGender = (numberOfPeople, race) => {
 
 const generateSinglePeopleNameAndGender = (race) => {
   // const isFemale = Math.random() >= 0.1; // %90 probability of get "true"
-  const isMale = Math.random() >= 0.5; // %50 probability of get 'true'
-  const gender = isMale ? 'male' : 'female';
+  const isFemale = Math.random() >= 0.5; // %50 probability of get 'true'
+  const gender = isFemale ? 'female' : 'male';
   const nameGenerated = nameByRace(race, { gender });
   const personGenerated = {
     name: nameGenerated,
@@ -147,11 +147,42 @@ const getSomeNames = (peopleNamesArray, numberOfNames, indexToAvoid) => {
   return someNames;
 };
 
-const generatePeopleArray = async (qty, town) => {
-  const selectedTown = town || TOWNS_ARRAY[generateRandom([0, TOWNS_ARRAY.length - 1])].name;
-  const requestedQty = qty || 20;
-  const peopleArray = generatePeople(requestedQty, selectedTown);
-  console.log('peopleArray: ', JSON.stringify(peopleArray));
+const getSomeElementsFromArray = (srcArray, qty) => {
+  const someElements = [];
+  for (let i = 0; i < qty; i += 1) {
+    const idx = generateRandom([0, srcArray.length]);
+    if (!someElements.includes(srcArray[idx])) {
+      someElements.push(srcArray[idx]);
+    } else {
+      i -= 1;
+    }
+  }
+  return someElements;
 };
 
-export default generatePeopleArray;
+export const generatePopulation = (race, numberOfPeople) => {
+  const townPopulation = {};
+  const isRaceSupported = checkIfExistInArray(race, RACES_SUPPORTED);
+  if (isRaceSupported) {
+    const town = fakeName();
+    const peopleArray = generatePeople(race, numberOfPeople);
+    townPopulation.townName = town;
+    townPopulation.mainRace = race;
+    // description,
+    townPopulation.inhabitants = peopleArray;
+  } else {
+    throw new ErrorHandler(404, `Race provided is not supported YET. Please provide one of the currently supported races: [${RACES_SUPPORTED}]`);
+  }
+  return townPopulation;
+};
+
+export const generatePeopleArrayByRace = (race, qty) => {
+  const requestedQty = qty || 20;
+  const selectedTown = TOWNS_ARRAY.find((townObj) => (
+    townObj.mainRace === race
+  ));
+  console.log('town: ', selectedTown);
+  const peopleArray = generatePeople(requestedQty, selectedTown);
+  // console.log('peopleArray: ', JSON.stringify(peopleArray));
+  return peopleArray;
+};
