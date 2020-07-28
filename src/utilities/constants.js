@@ -1,7 +1,33 @@
+/** Keys that should have strings values
+ *  @constant
+ *  @type {Array}
+*/
+export const STRING_PARAMS = ['sortBy'];
+
+/** Keys that should have numbers values
+ *  @constant
+ *  @type {Array}
+*/
+export const NUMBER_PARAMS = ['limit', 'offset', 'orderBy'];
+
+/** Keys that should have boolean values
+ *  @constant
+ *  @type {Array}
+*/
+export const BOOLEAN_PARAMS = [''];
+
 export const API_URL = {
   base: 'http://api.adorable.io',
   avatarResource: 'avatars',
 };
+
+/** Keys from Population object that are accepted for query strings
+ * @constant
+ * @type {Array}
+*/
+export const POPULATION_ACCEPTED_QUERY_STRINGS = ['limit', 'sortBy'];
+
+export const RACES_SUPPORTED = ['human', 'elf', 'dwarf', 'goblin', 'halfling', 'orc', 'drow', 'gnome', 'highelf', 'darkelf'];
 
 export const AGES_RANGES = {
   human: [15, 110],
